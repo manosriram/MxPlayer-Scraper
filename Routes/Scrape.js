@@ -6,10 +6,14 @@ const fs = require("fs");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const csvWriter = createCsvWriter({
   path: "Info.csv",
-  header: [{ id: "category", title: "Category" }, { id: "info", title: "Data" },{id:"extra", title: "Extra"}]
+  header: [
+    { id: "category", title: "Category" },
+    { id: "info", title: "Data" },
+    { id: "extra", title: "Extra" }
+  ]
 });
 
-const fetchData = async (query) => {
+const fetchData = async query => {
   const data = await fetch(`https://www.mxplayer.in/${query}`);
   const resp = await data.text();
   return resp;
@@ -153,25 +157,20 @@ router.get("/", async (req, res) => {
   const bodyData7 = await fetchData("buzz");
   const $7 = cheerio.load(bodyData7);
   for (let t1 = 1; t1 < 70; t1++) {
-      let r = $7(
-        `#main > div > div > div > div.tab-content.active > div > div.buzz-tab-center > div > div > div.infiniter-container > div > div > div:nth-child(${t1}) > a > div > div.card-details > div.text-overflow.card-header`
-      ).each((i, el) => {
-        const $el = $(el);
-          ar.push({
-            category: "Buzz",
-            info: $el.text(),
-          });
-        });
-    }
+    let r = $7(
+      `#main > div > div > div > div.tab-content.active > div > div.buzz-tab-center > div > div > div.infiniter-container > div > div > div:nth-child(${t1}) > a > div > div.card-details > div.text-overflow.card-header`
+    ).each((i, el) => {
+      const $el = $(el);
+      ar.push({
+        category: "Buzz",
+        info: $el.text()
+      });
+    });
+  }
 
-
-  ar.map(el => console.log(el));
   csvWriter
     .writeRecords(ar)
     .then(() => res.json({ Info: "Data Written Succesfully." }));
-
-    return res.json({data: ar});
 });
 
-// #main > div > div > div > div.tab-content.active > div > div.buzz-tab-center > div > div > div.infiniter-container > div > div > div:nth-child(1) > a > div > div.card-details > div.text-overflow.card-header
 module.exports = router;
