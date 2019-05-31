@@ -6,41 +6,11 @@ const fs = require("fs");
 const createCsvWriter = require("csv-writer").createObjectCsvWriter;
 const csvWriter = createCsvWriter({
   path: "Info.csv",
-  header: [{ id: "category", title: "Category" }, { id: "info", title: "Data" }]
+  header: [{ id: "category", title: "Category" }, { id: "info", title: "Data" },{id:"extra", title: "Extra"}]
 });
 
-const fetchMovies = async () => {
-  const data = await fetch("https://www.mxplayer.in/movies");
-  const resp = await data.text();
-  return resp;
-};
-
-const fetchWS = async () => {
-  const data = await fetch("https://www.mxplayer.in/web-series");
-  const resp = await data.text();
-  return resp;
-};
-
-const fetchShows = async () => {
-  const data = await fetch("https://www.mxplayer.in/shows");
-  const resp = await data.text();
-  return resp;
-};
-
-const fetchMusic = async () => {
-  const data = await fetch("https://www.mxplayer.in/music");
-  const resp = await data.text();
-  return resp;
-};
-
-const fetchNews = async () => {
-  const data = await fetch("https://www.mxplayer.in/news");
-  const resp = await data.text();
-  return resp;
-};
-
-const fetchSports = async () => {
-  const data = await fetch("https://www.mxplayer.in/sports");
+const fetchData = async (query) => {
+  const data = await fetch(`https://www.mxplayer.in/${query}`);
   const resp = await data.text();
   return resp;
 };
@@ -48,7 +18,7 @@ const fetchSports = async () => {
 router.get("/", async (req, res) => {
   var ar = [];
 
-  const bodyData = await fetchMovies();
+  const bodyData = await fetchData("movies");
   const $ = cheerio.load(bodyData);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -70,7 +40,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  const bodyData2 = await fetchWS();
+  const bodyData2 = await fetchData("web-series");
   const $2 = cheerio.load(bodyData2);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -92,7 +62,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  const bodyData3 = await fetchShows();
+  const bodyData3 = await fetchData("shows");
   const $3 = cheerio.load(bodyData3);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -114,7 +84,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  const bodyData4 = await fetchMusic();
+  const bodyData4 = await fetchData("music");
   const $4 = cheerio.load(bodyData4);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -136,7 +106,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  const bodyData5 = await fetchNews();
+  const bodyData5 = await fetchData("news");
   const $5 = cheerio.load(bodyData5);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -158,7 +128,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  const bodyData6 = await fetchSports();
+  const bodyData6 = await fetchData("sports");
   const $6 = cheerio.load(bodyData6);
   for (let t1 = 1; t1 < 70; t1++) {
     for (let t = 1; t < 70; t++) {
@@ -180,10 +150,28 @@ router.get("/", async (req, res) => {
     }
   }
 
+  const bodyData7 = await fetchData("buzz");
+  const $7 = cheerio.load(bodyData7);
+  for (let t1 = 1; t1 < 70; t1++) {
+      let r = $7(
+        `#main > div > div > div > div.tab-content.active > div > div.buzz-tab-center > div > div > div.infiniter-container > div > div > div:nth-child(${t1}) > a > div > div.card-details > div.text-overflow.card-header`
+      ).each((i, el) => {
+        const $el = $(el);
+          ar.push({
+            category: "Buzz",
+            info: $el.text(),
+          });
+        });
+    }
+
+
   ar.map(el => console.log(el));
   csvWriter
     .writeRecords(ar)
     .then(() => res.json({ Info: "Data Written Succesfully." }));
+
+    return res.json({data: ar});
 });
 
+// #main > div > div > div > div.tab-content.active > div > div.buzz-tab-center > div > div > div.infiniter-container > div > div > div:nth-child(1) > a > div > div.card-details > div.text-overflow.card-header
 module.exports = router;
